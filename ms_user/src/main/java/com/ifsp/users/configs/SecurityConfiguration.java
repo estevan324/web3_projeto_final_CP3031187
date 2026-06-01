@@ -21,7 +21,8 @@ public class SecurityConfiguration {
     // ==================== ENDPOINTS PÚBLICOS ====================
     public static final String[] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED = {
             "/users/login",
-            "/users"
+            "/users",
+            "/auth/request-code"
     };
     // ==================== ENDPOINTS COM ACESSO RESTRITO ====================
     public static final String[] ENDPOINTS_ADMIN = {

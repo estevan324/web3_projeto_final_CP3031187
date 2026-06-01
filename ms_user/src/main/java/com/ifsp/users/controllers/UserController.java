@@ -23,13 +23,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<RecoveryJwtTokenDto> login(@RequestBody LoginUserDto
-                                                             dto) {
-        RecoveryJwtTokenDto token = userService.authenticateUser(dto);
-        return ResponseEntity.ok(token);
-    }
-
     @GetMapping("/me")
     public ResponseEntity<UserProfileDto> getCurrentUser(Authentication authentication) {
         return ResponseEntity.ok(userService.getUserInformation(authentication));
