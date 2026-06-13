@@ -80,4 +80,15 @@ public class UserService {
            return userRepository.save(newUser);
         });
     }
+
+    public RecoveryJwtTokenDto generateTokenByEmail(String email) {
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado após validação de código"));
+
+        var userDetails = new UserDetailsImpl(user);
+
+        var token = jwtTokenService.generateToken(userDetails);
+
+        return new RecoveryJwtTokenDto(token);
+    }
 }

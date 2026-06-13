@@ -1,12 +1,10 @@
 package com.ifsp.users.controllers;
 
-import com.ifsp.users.dtos.EmailDto;
-import com.ifsp.users.dtos.EmailRequest;
-import com.ifsp.users.dtos.LoginUserDto;
-import com.ifsp.users.dtos.RecoveryJwtTokenDto;
+import com.ifsp.users.dtos.*;
 import com.ifsp.users.producers.UserProducer;
 import com.ifsp.users.services.CodigoCacheService;
 import com.ifsp.users.services.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,5 +53,26 @@ public class AuthController {
         userProducer.sendEmail(emailDto);
 
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/verify-code")
+    public ResponseEntity<?> verifyCode(@RequestBody ValidateCodeRequest request) {
+        var cachedCode = codigoCacheService.obterCodigoValido(request.email());
+
+        if (cachedCode == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("Código expirado ou não solicitado."));
+        }
+
+        if (!cachedCode.equals(request.code())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse("Código inválido."));
+        }
+
+        codigoCacheService.removerCodigo(request.email());
+
+        var tokenDto = userService.generateTokenByEmail(request.email());
+
+        return ResponseEntity.ok(tokenDto);
     }
 }
