@@ -64,7 +64,7 @@ Para que a aplicação funcione em sua totalidade, é necessário iniciar as tr�
 Abra um terminal na pasta do MS_Users e execute:
 
 ```bash
-cd caminho/para/ms_users
+cd caminho/para/ms_user
 mvn spring-boot:run
 ```
 
@@ -82,7 +82,7 @@ mvn spring-boot:run
 Abra um terminal na pasta do frontend (client), instale as bibliotecas e inicie a aplicação:
 
 ```bash
-cd caminho/para/frontend
+cd caminho/para/client
 npm install
 npm start # ou node server.js
 ```
