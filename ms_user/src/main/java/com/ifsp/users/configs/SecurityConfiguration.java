@@ -26,6 +26,12 @@ public class SecurityConfiguration {
             "/auth/verify-code"
     };
     // ==================== ENDPOINTS COM ACESSO RESTRITO ====================
+
+    public static final String[] ENDPOINTS_AUTHENTICATED = {
+            "/users/me",
+            "/users/update-profile"
+    };
+
     public static final String[] ENDPOINTS_ADMIN = {
             "/users/test/administrator"
     };
@@ -45,7 +51,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
 
                         .requestMatchers(ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED).permitAll()
-                        .requestMatchers("/users/me").authenticated()
+                        .requestMatchers(ENDPOINTS_AUTHENTICATED).authenticated()
                         .requestMatchers(ENDPOINTS_ADMIN).hasRole("ADMINISTRATOR")
                         .requestMatchers(ENDPOINTS_CUSTOMER).hasRole("CUSTOMER")
                         .anyRequest().authenticated()

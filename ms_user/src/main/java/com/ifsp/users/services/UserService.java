@@ -1,9 +1,6 @@
 package com.ifsp.users.services;
 
-import com.ifsp.users.dtos.CreateUserDto;
-import com.ifsp.users.dtos.LoginUserDto;
-import com.ifsp.users.dtos.RecoveryJwtTokenDto;
-import com.ifsp.users.dtos.UserProfileDto;
+import com.ifsp.users.dtos.*;
 import com.ifsp.users.entities.Role;
 import com.ifsp.users.entities.User;
 import com.ifsp.users.enums.RoleName;
@@ -79,6 +76,18 @@ public class UserService {
 
            return userRepository.save(newUser);
         });
+    }
+
+    public User updateProfile(String email, UpdateProfileDto dto) {
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        user.setName(dto.name());
+
+        Role newRole = Role.builder().name(dto.role()).build();
+        user.setRoles(List.of(newRole));
+
+        return userRepository.save(user);
     }
 
     public RecoveryJwtTokenDto generateTokenByEmail(String email) {
