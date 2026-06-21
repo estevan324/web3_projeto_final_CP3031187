@@ -13,18 +13,32 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="#">Meu Sistema</a>
-            <button class="btn btn-outline-light btn-sm" onclick="logout()">Sair</button>
+            <a class="navbar-brand fw-bold" href="/dashboard">Meu Sistema</a>
+            <div class="d-flex">
+                <button class="btn btn-outline-light btn-sm" onclick="logout()">Sair</button>
+            </div>
         </div>
     </nav>
 
-    <div class="container d-flex flex-column align-items-center justify-content-center" style="min-height: 80vh;">
-        <div class="text-center">
-            <i class="bi bi-cone-striped text-warning" style="font-size: 6rem;"></i>
-            <h1 class="mt-3 fw-bold text-dark">Dashboard em Construção</h1>
-            <p class="text-muted fs-5">Estamos preparando novidades incríveis para você. Volte em breve!</p>
-            <div class="spinner-border text-primary mt-3" role="status">
-                <span class="visually-hidden">Carregando...</span>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h2 class="mb-4 fw-bold text-dark">Bem-vindo ao Dashboard</h2>
+
+                <div class="d-flex justify-content-center gap-3 mb-4">
+                    <button class="btn btn-success fw-bold" onclick="testProtectedEndpoint()">
+                        <i class="bi bi-shield-lock me-1"></i> Testar Endpoint Protegido
+                    </button>
+                    <button class="btn btn-primary fw-bold" onclick="getMyProfile()">
+                        <i class="bi bi-person-badge me-1"></i> Meu Perfil
+                    </button>
+                </div>
+
+                <div class="card text-start shadow-sm d-none" id="result-card">
+                    <div class="card-header fw-bold bg-white" id="result-title">Resultado</div>
+                    <div class="card-body bg-light p-0" id="result-content">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -40,8 +54,81 @@
             sessionStorage.removeItem('jwt_token');
             window.location.href = '/';
         }
-    </script>
 
+        function renderResult(title, htmlContent, isError = false) {
+            const card = document.getElementById('result-card');
+            const titleEl = document.getElementById('result-title');
+            const contentEl = document.getElementById('result-content');
+
+            card.classList.remove('d-none');
+            titleEl.textContent = title;
+            titleEl.className = `card-header fw-bold ${isError ? 'text-danger' : 'text-success'}`;
+
+            contentEl.innerHTML = htmlContent;
+        }
+
+        async function testProtectedEndpoint() {
+            try {
+                const response = await fetch('/api/protected', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.text();
+                renderResult('Resposta de /api/protected', `<p class="p-3 mb-0">${data}</p>`, !response.ok);
+
+            } catch (error) {
+                renderResult('Erro na Requisição', `<p class="p-3 mb-0">${error.message}</p>`, true);
+            }
+        }
+
+        async function getMyProfile() {
+            try {
+                const response = await fetch('/api/me', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    const rolesHtml = data.roles.map(role =>
+                        `<span class="badge bg-primary me-1">${role}</span>`
+                    ).join('');
+
+                    const nomeExibicao = data.name ? data.name : '<span class="text-warning fst-italic">Não informado</span>';
+
+                    const profileHtml = `
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item bg-light">
+                                <small class="text-muted d-block">ID do Usuário</small>
+                                <span class="fw-bold" style="font-family: monospace;">${data.id}</span>
+                            </li>
+                            <li class="list-group-item bg-light">
+                                <small class="text-muted d-block">Nome</small>
+                                <span class="fw-bold">${nomeExibicao}</span>
+                            </li>
+                            <li class="list-group-item bg-light">
+                                <small class="text-muted d-block">E-mail</small>
+                                <span class="fw-bold">${data.email}</span>
+                            </li>
+                            <li class="list-group-item bg-light">
+                                <small class="text-muted d-block mb-1">Permissões (Roles)</small>
+                                ${rolesHtml}
+                            </li>
+                        </ul>
+                    `;
+
+                    renderResult('Dados do Perfil', profileHtml);
+                } else {
+                    const errorText = await response.text();
+                    renderResult('Erro de Acesso', `<p class="p-3 mb-0">${errorText}</p>`, true);
+                }
+            } catch (error) {
+                renderResult('Erro na Requisição', `<p class="p-3 mb-0">${error.message}</p>`, true);
+            }
+        }
+    </script>
 </body>
 
 </html>

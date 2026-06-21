@@ -68,7 +68,7 @@
 
                 if (response.ok && data.sucesso) {
                     sessionStorage.setItem('jwt_token', data.token);
-                    window.location.href = '/dashboard';
+                    window.location.href = '/register';
                 } else {
                     erroEl.textContent = data.mensagem || "Erro ao validar o código.";
                     erroEl.classList.remove('d-none');

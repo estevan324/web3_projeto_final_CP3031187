@@ -26,6 +26,13 @@
         </form>
     </div>
 
+    <script>
+        const tokenAtivo = sessionStorage.getItem('jwt_token');
+
+        if (tokenAtivo) {
+            window.location.href = '/dashboard';
+        }
+    </script>
 </body>
 
 </html>
