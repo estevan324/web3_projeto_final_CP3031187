@@ -32,7 +32,7 @@ public class UserController {
                 .map(role -> role.getName().name())
                 .toList();
 
-        var userProfile = new UserProfileDto(updated.getId(), updated.getEmail(), stringRoles);
+        var userProfile = new UserProfileDto(updated.getId(), updated.getEmail(), updated.getName(), stringRoles);
 
         return ResponseEntity.ok(userProfile);
     }
