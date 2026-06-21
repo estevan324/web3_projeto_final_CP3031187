@@ -4,6 +4,7 @@ import com.ifsp.users.dtos.*;
 import com.ifsp.users.entities.Role;
 import com.ifsp.users.entities.User;
 import com.ifsp.users.enums.RoleName;
+import com.ifsp.users.repositories.RoleRepository;
 import com.ifsp.users.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,7 +30,18 @@ public class UserService {
     private UserRepository userRepository;
 
     @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
+
+    private Role getOrCreateRole(RoleName roleName) {
+        return roleRepository.findByName(roleName)
+                .orElseGet(() -> {
+                    Role newRole = Role.builder().name(roleName).build();
+                    return roleRepository.save(newRole);
+                });
+    }
 
     public RecoveryJwtTokenDto authenticateUser(LoginUserDto loginDto) {
         var authToken = new UsernamePasswordAuthenticationToken(loginDto.email(),
@@ -42,11 +55,14 @@ public class UserService {
     }
 
     public void createUser(CreateUserDto createDto) {
+        Role role = getOrCreateRole(createDto.role());
+
         User newUser = User.builder()
                 .email(createDto.email())
                 .password(passwordEncoder.encode(createDto.password()))
-                .roles(List.of(Role.builder().name(createDto.role()).build()))
+                .roles(new ArrayList<>(List.of(role)))
                 .build();
+
         userRepository.save(newUser);
     }
 
@@ -66,15 +82,16 @@ public class UserService {
 
     public User getOrCreateUserForCode(String email) {
         return userRepository.findByEmail(email).orElseGet(() -> {
-           var randomPassword = UUID.randomUUID().toString();
+            var randomPassword = UUID.randomUUID().toString();
+            Role customerRole = getOrCreateRole(RoleName.ROLE_CUSTOMER);
 
-           var newUser = User.builder()
-                   .email(email)
-                   .password(passwordEncoder.encode(randomPassword))
-                   .roles(List.of(Role.builder().name(RoleName.ROLE_CUSTOMER).build()))
-                   .build();
+            var newUser = User.builder()
+                    .email(email)
+                    .password(passwordEncoder.encode(randomPassword))
+                    .roles(new ArrayList<>(List.of(customerRole)))
+                    .build();
 
-           return userRepository.save(newUser);
+            return userRepository.save(newUser);
         });
     }
 
@@ -83,9 +100,9 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         user.setName(dto.name());
+        Role role = getOrCreateRole(dto.role());
 
-        Role newRole = Role.builder().name(dto.role()).build();
-        user.setRoles(List.of(newRole));
+        user.setRoles(new ArrayList<>(List.of(role)));
 
         return userRepository.save(user);
     }
